@@ -165,6 +165,28 @@ class MultiAgentManager:
 
         return output
 
+    async def _safe_execute_with_hard_timeout(
+        self,
+        client: httpx.AsyncClient,
+        persona: AgentPersona,
+        user_query: str,
+        on_progress: Optional[Callable[[str, AgentOutput], Awaitable[None]]] = None
+    ) -> AgentOutput:
+        try:
+            return await asyncio.wait_for(
+                self.execute_single_agent(client, persona, user_query, on_progress),
+                timeout=self.timeout_per_agent
+            )
+        except (asyncio.TimeoutError, Exception) as e:
+            fallback = self._create_fallback_response(persona, user_query, f"Timeout >{self.timeout_per_agent}s")
+            fallback.latency_seconds = self.timeout_per_agent
+            if on_progress:
+                try:
+                    await on_progress(persona.id, fallback)
+                except Exception:
+                    pass
+            return fallback
+
     async def run_all_concurrent(
         self,
         user_query: str,
@@ -176,7 +198,7 @@ class MultiAgentManager:
         """
         async with httpx.AsyncClient() as client:
             tasks = [
-                self.execute_single_agent(client, persona, user_query, on_agent_complete)
+                self._safe_execute_with_hard_timeout(client, persona, user_query, on_agent_complete)
                 for persona in self.personas
             ]
             

@@ -122,11 +122,11 @@ Answer: [Crucial counter-argument and trade-offs]"""
         color="amber",
         accent="border-amber-500/30 bg-amber-500/10 text-amber-400",
         provider="gemini",
-        model="gemini-1.5-flash",
-        display_model="Google Gemini 1.5 Flash",
+        model="gemini-3.5-flash-lite",
+        display_model="Google Gemini Flash",
         temperature=0.05,
         max_tokens=150,
-        system_prompt="""You are Fact-Checker powered by Gemini 1.5 Flash. Audit for 100% empirical truth in max 100 words.
+        system_prompt="""You are Fact-Checker powered by Google Gemini. Audit for 100% empirical truth in max 100 words.
 Format:
 Thoughts: [Verification criteria]
 Confidence: [0-100%]

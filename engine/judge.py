@@ -94,10 +94,10 @@ The 10 AI models (DeepSeek R1, Gemma 2, Qwen 2.5, Llama 3.1, Gemini Flash, Mistr
         model_used = "Gemini 1.5 Flash"
 
         async with httpx.AsyncClient() as client:
-            # Primary: Google AI Studio Gemini 1.5 Flash
+            # Primary: Google GenAI Gemini Flash
             ok, text = await call_gemini(
                 client=client,
-                model="gemini-1.5-flash",
+                model="gemini-3.5-flash-lite",
                 system_prompt=system_role,
                 user_prompt=judge_prompt,
                 temperature=0.15,
@@ -106,7 +106,7 @@ The 10 AI models (DeepSeek R1, Gemma 2, Qwen 2.5, Llama 3.1, Gemini Flash, Mistr
             )
             if ok and text:
                 final_text = text
-                model_used = "Gemini 1.5 Flash (Google AI Studio)"
+                model_used = "Gemini Flash (Google GenAI)"
             else:
                 # Secondary ultra-fast fallback: Groq Llama 3.3
                 ok_groq, text_groq = await call_groq(
