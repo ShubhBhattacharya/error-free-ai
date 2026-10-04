@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error-Free AI | 10-Agent Consensus Engine</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fafbfc;
+        }
+        pre, code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom clean typography */
+        .gemini-prose p { margin-bottom: 0.85rem; line-height: 1.7; }
+        .gemini-prose ul { list-style-type: disc; margin-left: 1.4rem; margin-bottom: 0.85rem; }
+        .gemini-prose ol { list-style-type: decimal; margin-left: 1.4rem; margin-bottom: 0.85rem; }
+        .gemini-prose li { margin-bottom: 0.35rem; }
+        .gemini-prose strong { font-weight: 600; color: #0f172a; }
+        .gemini-prose h2 { font-size: 1.35rem; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.65rem; color: #0f172a; }
+        .gemini-prose h3 { font-size: 1.15rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; color: #1e293b; }
+        .gemini-prose code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; font-size: 0.88em; color: #0f172a; }
+        .gemini-prose pre { background: #0f172a; color: #f8fafc; padding: 1.1rem; border-radius: 12px; overflow-x: auto; margin: 1rem 0; font-size: 0.88rem; }
+        .gemini-prose pre code { background: transparent; color: inherit; padding: 0; }
+        
+        .agent-pill {
+            transition: all 0.25s ease;
+        }
+        .agent-pill.active {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px -2px rgba(59, 130, 246, 0.15);
+        }
+        
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 antialiased selection:bg-blue-100">
+
+    <!-- Top Minimal Bar -->
+    <header class="w-full px-6 py-4 flex items-center justify-between border-b border-slate-100 bg-white/80 backdrop-blur sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                EF
+            </div>
+            <div>
+                <span class="text-lg font-semibold tracking-tight text-slate-900">Error-Free AI</span>
+                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                    10-Agent Consensus Matrix
+                </span>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="openProviderModal()" class="text-xs font-medium text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-slate-300 bg-white flex items-center gap-1.5 transition">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                AI Providers
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="w-full max-w-4xl mx-auto flex-1 px-4 flex flex-col justify-start pb-44">
+        
+        <!-- Welcome Screen (Visible before query) -->
+        <div id="welcomeHero" class="mt-24 flex flex-col items-start gap-4 transition-opacity duration-300">
+            <div class="text-5xl font-semibold tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-500 bg-clip-text text-transparent">
+                Hello, Shubh
+            </div>
+            <div class="text-3xl font-medium tracking-tight text-slate-400">
+                10 Specialized AI Minds. 1 Consensus Truth.
+            </div>
+            <p class="text-sm text-slate-500 max-w-xl leading-relaxed mt-1">
+                Your prompt is simultaneously evaluated by 10 independent expert personas in parallel—ranging from formal logicians to adversarial critics—before being verified and synthesized by The 11th Supreme Judge.
+            </p>
+
+            <!-- Agent Roster Badges Preview -->
+            <div class="w-full mt-4 p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                    Active Multi-Agent Network (10 Minds)
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="previewAgentGrid">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Stream Area -->
+        <div id="chatArea" class="hidden flex flex-col gap-6 mt-6 w-full">
+            
+            <!-- User Prompt Row -->
+            <div class="flex items-start justify-end gap-3">
+                <div id="displayUserQuery" class="bg-[#F0F4F9] text-slate-900 font-medium px-5 py-3 rounded-2xl max-w-xl text-base leading-relaxed shadow-xs">
+                    <!-- User question -->
+                </div>
+            </div>
+
+            <!-- Multi-Agent Parallel Live Tracker -->
+            <div id="agentMatrixTracker" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span id="trackerPulse" class="relative flex h-3 w-3">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
+                        </span>
+                        <span id="traceText" class="text-xs font-semibold text-slate-700">Dispatching 10 Minds concurrently...</span>
+                    </div>
+                    <span id="agentCountBadge" class="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                        0 / 10 Completed
+                    </span>
+                </div>
+
+                <!-- 10 Agent Status Chips -->
+                <div id="activeAgentChips" class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    <!-- Updated via live stream -->
+                </div>
+            </div>
+
+            <!-- AI Response Row -->
+            <div class="flex items-start gap-4 mt-2">
+                <!-- Sparkle Icon -->
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex-shrink-0 flex items-center justify-center text-white shadow-sm mt-1">
+                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z"/>
+                    </svg>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                    <!-- Consensus Metrics Bar (Visible when done) -->
+                    <div id="consensusMetaBar" class="hidden mb-4 p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-emerald-800 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                🏛️ Consensus Reached: <span id="metaScore">98%</span>
+                            </span>
+                            <span class="text-slate-400">|</span>
+                            <span id="metaLatency" class="text-emerald-700 font-mono">⏱️ 1.2s</span>
+                        </div>
+                        <button onclick="toggleDossiers()" id="toggleDossiersBtn" class="text-xs font-medium text-emerald-800 hover:text-emerald-950 underline flex items-center gap-1">
+                            Inspect 10 Mind Dossiers ↓
+                        </button>
+                    </div>
+
+                    <!-- Verified Response Output -->
+                    <div id="geminiOutput" class="gemini-prose text-slate-800 text-[15.5px] leading-relaxed break-words bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                        <div class="flex items-center gap-2 text-slate-400 text-sm">
+                            <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            Awaiting synthesis from The 11th Mind...
+                        </div>
+                    </div>
+
+                    <!-- Expandable 10-Agent Mind Dossiers Accordion -->
+                    <div id="dossiersContainer" class="hidden mt-6 flex flex-col gap-4">
+                        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                            <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider">
+                                📑 Deep Breakdown: The 10 Specialized Perspectives
+                            </h3>
+                            <span class="text-xs text-slate-500">Cross-examined by Synthesizer</span>
+                        </div>
+                        <div id="dossiersList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Populated with agent dossier cards -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Floating Input Capsule -->
+    <div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-[#fafbfc] via-[#fafbfc]/95 to-transparent pb-6 pt-10 px-4 z-10">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white border border-slate-200/90 rounded-3xl p-3 px-5 flex items-end gap-3 shadow-lg shadow-slate-200/50">
+                
+                <textarea id="queryInput" rows="1" 
+                          placeholder="Ask the 10-Agent Consensus Engine (e.g. Algorithmic trade-offs, architecture, security)..." 
+                          class="w-full bg-transparent resize-none border-0 text-slate-800 placeholder-slate-400 text-base focus:outline-none py-2.5 max-h-36"></textarea>
+
+                <div class="flex items-center gap-2 pb-1.5 flex-shrink-0">
+                    <button id="sendBtn" onclick="runConsensusPipeline()" 
+                            class="p-2.5 rounded-full bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4 rotate-90" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+            <div class="text-center mt-2 text-[11px] text-slate-400">
+                Multi-Agent Consensus Architecture • 10 Specialized Minds running in parallel + 1 Synthesizer Judge
+            </div>
+        </div>
+    </div>
+
+    <!-- Provider Configuration Modal -->
+    <div id="providerModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 flex flex-col gap-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">AI Provider Slots</h3>
+                    <p class="text-xs text-slate-500">Configure keys in <code class="text-blue-600 bg-blue-50 px-1 py-0.5 rounded">.env</code> to activate external models</p>
+                </div>
+                <button onclick="closeProviderModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">✕</button>
+            </div>
+            
+            <div id="providerList" class="flex flex-col gap-2.5 max-h-80 overflow-y-auto pr-1">
+                <div class="text-xs text-slate-400">Loading provider statuses...</div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 flex justify-end">
+                <button onclick="closeProviderModal()" class="px-4 py-2 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic Script -->
+    <script>
+        const input = document.getElementById("queryInput");
+        let activeAgentData = {};
+        let agentMetadataList = [];
+
+        // Auto-expand textarea
+        input.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = Math.min(this.scrollHeight, 140) + "px";
+        });
+
+        input.addEventListener("keydown", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                runConsensusPipeline();
+            }
+        });
+
+        // Initialize agent roster on load
+        async function loadAgents() {
+            try {
+                const res = await fetch("/api/agents");
+                agentMetadataList = await res.json();
+                renderPreviewGrid();
+            } catch (e) {
+                console.error("Failed to load agents", e);
+            }
+        }
+
+        function renderPreviewGrid() {
+            const grid = document.getElementById("previewAgentGrid");
+            grid.innerHTML = "";
+            agentMetadataList.forEach(a => {
+                const card = document.createElement("div");
+                card.className = "flex items-center gap-2 p-2 rounded-xl bg-slate-50/80 border border-slate-100 text-xs";
+                card.innerHTML = `
+                    <span class="text-base">${a.icon}</span>
+                    <div class="truncate">
+                        <div class="font-medium text-slate-800 truncate">${a.name.split(" ")[0]}</div>
+                        <div class="text-[10px] text-slate-400 truncate">${a.role}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderActiveChips() {
+            const chips = document.getElementById("activeAgentChips");
+            chips.innerHTML = "";
+            agentMetadataList.forEach(a => {
+                const chip = document.createElement("div");
+                chip.id = `chip-${a.id}`;
+                chip.className = "agent-pill flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-500 opacity-60";
+                chip.innerHTML = `
+                    <div class="flex items-center gap-1.5 truncate">
+                        <span>${a.icon}</span>
+                        <span class="font-medium truncate text-[11px]">${a.role}</span>
+                    </div>
+                    <span id="conf-${a.id}" class="text-[10px] font-mono font-medium">pending</span>
+                `;
+                chips.appendChild(chip);
+            });
+        }
+
+        async function openProviderModal() {
+            const modal = document.getElementById("providerModal");
+            const list = document.getElementById("providerList");
+            modal.classList.remove("hidden");
+            try {
+                const res = await fetch("/api/providers/status");
+                const data = await res.json();
+                list.innerHTML = "";
+                for (const [key, p] of Object.entries(data)) {
+                    const row = document.createElement("div");
+                    row.className = "p-3 rounded-xl border flex items-center justify-between " + 
+                        (p.configured ? "border-emerald-200 bg-emerald-50/50" : "border-slate-200 bg-slate-50/50");
+                    row.innerHTML = `
+                        <div>
+                            <div class="font-semibold text-xs text-slate-800">${p.name}</div>
+                            <div class="text-[11px] text-slate-400 font-mono">${p.env_variable} • ${p.default_model}</div>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${p.configured ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">
+                            ${p.configured ? 'ACTIVE KEY' : 'SLOT READY'}
+                        </span>
+                    `;
+                    list.appendChild(row);
+                }
+            } catch (e) {
+                list.innerHTML = `<div class="text-xs text-red-500">Error loading status: ${e.message}</div>`;
+            }
+        }
+
+        function closeProviderModal() {
+            document.getElementById("providerModal").classList.add("hidden");
+        }
+
+        function toggleDossiers() {
+            const cont = document.getElementById("dossiersContainer");
+            const btn = document.getElementById("toggleDossiersBtn");
+            if (cont.classList.contains("hidden")) {
+                cont.classList.remove("hidden");
+                btn.innerText = "Hide 10 Mind Dossiers ↑";
+            } else {
+                cont.classList.add("hidden");
+                btn.innerText = "Inspect 10 Mind Dossiers ↓";
+            }
+        }
+
+        async function runConsensusPipeline() {
+            const btn = document.getElementById("sendBtn");
+            const welcomeHero = document.getElementById("welcomeHero");
+            const chatArea = document.getElementById("chatArea");
+            const displayUserQuery = document.getElementById("displayUserQuery");
+            const traceText = document.getElementById("traceText");
+            const trackerPulse = document.getElementById("trackerPulse");
+            const agentCountBadge = document.getElementById("agentCountBadge");
+            const geminiOutput = document.getElementById("geminiOutput");
+            const consensusMetaBar = document.getElementById("consensusMetaBar");
+            const dossiersContainer = document.getElementById("dossiersContainer");
+            const dossiersList = document.getElementById("dossiersList");
+
+            const query = input.value.trim();
+            if (!query) return;
+
+            welcomeHero.classList.add("hidden");
+            chatArea.classList.remove("hidden");
+            displayUserQuery.innerText = query;
+            
+            input.value = "";
+            input.style.height = "auto";
+            btn.disabled = true;
+
+            // Reset UI states
+            activeAgentData = {};
+            consensusMetaBar.classList.add("hidden");
+            dossiersContainer.classList.add("hidden");
+            dossiersList.innerHTML = "";
+            trackerPulse.classList.remove("hidden");
+            traceText.innerText = "Dispatching 10 Minds in parallel...";
+            agentCountBadge.innerText = "0 / 10 Completed";
+            renderActiveChips();
+
+            geminiOutput.innerHTML = `
+                <div class="flex items-center gap-2 text-slate-400 text-sm">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    Synthesizing multi-agent consensus matrix...
+                </div>
+            `;
+
+            let completedAgents = 0;
+
+            try {
+                // Use event stream for live reactive feedback
+                const response = await fetch("/api/multi-agent/stream", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query: query })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const events = buffer.split("\n\n");
+                    buffer = events.pop(); // keep trailing incomplete block
+
+                    for (const evText of events) {
+                        if (!evText.trim()) continue;
+                        const lines = evText.split("\n");
+                        let eventType = "message";
+                        let dataStr = "";
+
+                        for (const line of lines) {
+                            if (line.startsWith("event: ")) {
+                                eventType = line.replace("event: ", "").trim();
+                            } else if (line.startsWith("data: ")) {
+                                dataStr = line.replace("data: ", "").trim();
+                            }
+                        }
+
+                        if (!dataStr) continue;
+                        const data = JSON.parse(dataStr);
+
+                        if (eventType === "agent_complete") {
+                            completedAgents++;
+                            activeAgentData[data.agent_id] = data;
+                            agentCountBadge.innerText = `${completedAgents} / 10 Completed`;
+                            traceText.innerText = `Parallel analysis: ${data.name} completed`;
+
+                            const chip = document.getElementById(`chip-${data.agent_id}`);
+                            const conf = document.getElementById(`conf-${data.agent_id}`);
+                            if (chip && conf) {
+                                chip.classList.remove("opacity-60", "bg-slate-50", "border-slate-200/80");
+                                chip.classList.add("active", "bg-emerald-50", "border-emerald-200", "text-emerald-900");
+                                conf.innerText = `${Math.round(data.confidence_score * 100)}%`;
+                                conf.className = "text-[10px] font-mono font-bold text-emerald-700";
+                            }
+                        } else if (eventType === "judging") {
+                            traceText.innerText = "The 11th Mind (Supreme Judge) verifying consensus...";
+                            agentCountBadge.innerText = "10 / 10 Active";
+                        } else if (eventType === "consensus_complete") {
+                            // Synthesis is done!
+                            traceText.innerText = "Consensus verified & complete";
+                            trackerPulse.classList.add("hidden");
+                            
+                            // Render final Markdown
+                            geminiOutput.innerHTML = marked.parse(data.final_answer);
+
+                            // Meta Bar
+                            consensusMetaBar.classList.remove("hidden");
+                            document.getElementById("metaScore").innerText = `${data.consensus_score}% (${data.confidence_level})`;
+                            document.getElementById("metaLatency").innerText = `⏱️ ${data.total_latency_seconds}s Parallel Latency`;
+
+                            // Populate detailed dossiers cards
+                            renderDossierCards(data.agent_outputs);
+                        }
+                    }
+                }
+            } catch (err) {
+                traceText.innerText = "Error in consensus pipeline: " + err.message;
+                geminiOutput.innerHTML = `<div class="text-red-600">Failed to complete consensus: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function renderDossierCards(agentOutputs) {
+            const list = document.getElementById("dossiersList");
+            list.innerHTML = "";
+            (agentOutputs || []).forEach(a => {
+                const card = document.createElement("div");
+                card.className = "p-4 rounded-xl border border-slate-200 bg-white shadow-xs flex flex-col gap-2.5";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">${a.icon}</span>
+                            <div>
+                                <h4 class="font-bold text-xs text-slate-800">${a.name}</h4>
+                                <span class="text-[10px] text-slate-400">${a.role}</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200/60">
+                            ${Math.round(a.confidence_score * 100)}% Conf • ${a.latency_seconds}s
+                        </span>
+                    </div>
+
+                    <div class="text-xs text-slate-600">
+                        <span class="font-semibold text-slate-700">Specialized Rationale:</span>
+                        <p class="text-slate-500 mt-0.5 leading-relaxed">${a.thoughts || 'Analyzed according to persona specialty.'}</p>
+                    </div>
+
+                    ${a.critique_or_risks ? `
+                    <div class="p-2.5 rounded-lg bg-amber-50/80 border border-amber-200/70 text-xs text-amber-900">
+                        <span class="font-semibold text-amber-800">Critical Risk / Flaw Flagged:</span>
+                        <p class="text-amber-700 mt-0.5 leading-relaxed text-[11px]">${a.critique_or_risks}</p>
+                    </div>` : ''}
+
+                    <div class="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 leading-relaxed">
+                        <span class="font-semibold text-slate-800 block mb-1">Perspective Output:</span>
+                        ${a.answer}
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // Initialize on page load
+        loadAgents();
+    </script>
+</body>
+</html>
