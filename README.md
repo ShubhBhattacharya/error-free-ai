@@ -45,20 +45,21 @@ Unlike monolithic single-model systems or slow sequential chains, Error-Free AI 
 
 ---
 
-## 🧠 The 10 Specialized Personas
+## 🧠 The 10 Specialized Models & Personas
 
-| # | Persona | Role | Focus & Temperature |
+| # | Persona | Model & Provider | Role & Focus |
 |---|---|---|---|
-| 1 | **Core Logic & Reasoning** | Deductive Reasoner | Formal logic, causal chains, first-principles deduction (`T=0.1`) |
-| 2 | **Creative & Narrative Stylist** | Stylist & Analogist | Evocative analogies, memorable mental models (`T=0.75`) |
-| 3 | **Code Architecture & Syntax** | Software Architect | SOLID principles, clean code, Big-O efficiency (`T=0.15`) |
-| 4 | **Devil's Advocate** | Adversarial Critic | Hidden traps, unstated assumptions, failure modes (`T=0.35`) |
-| 5 | **Fact-Checker & Auditor** | Empirical Auditor | Ground truth, technical verification, zero hallucination (`T=0.05`) |
-| 6 | **Edge-Case & Security** | Security Sentinel | OWASP vectors, boundary limits, concurrency & race conditions (`T=0.2`) |
-| 7 | **Concise / Executive Summarizer**| BLUF Synthesizer | Bottom-Line-Up-Front, high information density (`T=0.15`) |
-| 8 | **Data & Analytical Thinking** | Quantitative Analyst | Probability distributions, KPIs, benchmark metrics (`T=0.2`) |
-| 9 | **UX & Clarity Optimizer** | Cognitive Ergonomist | Jargon elimination, progressive disclosure, readability (`T=0.35`) |
-| 10 | **Domain Specialist** | Context SME | Adaptive industry context and vertical standards (`T=0.25`) |
+| 1 | **Core Logic & Reasoning** | **DeepSeek R1 Distill** (Groq) | Formal logic, causal chains, first-principles deduction (`T=0.1`) |
+| 2 | **Creative & Narrative Stylist** | **Google Gemma 2 9B** (Groq) | Evocative analogies, memorable mental models (`T=0.7`) |
+| 3 | **Code Architecture & Syntax** | **Qwen 2.5 Coder** (OpenRouter) | SOLID principles, clean code, Big-O efficiency (`T=0.15`) |
+| 4 | **Devil's Advocate** | **Meta Llama 3.1 70B** (Groq) | Hidden traps, unstated assumptions, failure modes (`T=0.35`) |
+| 5 | **Fact-Checker & Auditor** | **Google Gemini 1.5 Flash** (Google AI Studio) | Ground truth, technical verification, zero hallucination (`T=0.05`) |
+| 6 | **Edge-Case & Security** | **Mistral AI** (Groq) | OWASP vectors, boundary limits, concurrency & race conditions (`T=0.2`) |
+| 7 | **Concise / Executive Summarizer**| **Meta Llama 3.1 8B Instant** (Groq) | Bottom-Line-Up-Front (BLUF), ultra-high signal density (`T=0.1`) |
+| 8 | **Data & Analytical Thinking** | **Microsoft Phi-3.5** (OpenRouter) | Probability distributions, KPIs, benchmark metrics (`T=0.2`) |
+| 9 | **UX & Clarity Optimizer** | **Cohere Command R** (OpenRouter) | Jargon elimination, progressive disclosure, readability (`T=0.35`) |
+| 10 | **Domain Specialist** | **Meta Llama 3.3 70B** (Groq) | Adaptive industry vertical standards (`T=0.2`) |
+| 11 | **The Supreme Judge** | **Google Gemini 1.5 Flash** (Google AI Studio) | Cross-examines all 10 dossiers & synthesizes optimal answer |
 
 ---
 

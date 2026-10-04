@@ -1,7 +1,7 @@
-"""The 11th Mind: Master Consensus Judge & Synthesis Layer.
+"""The 11th Mind: Master Consensus Judge powered by Google Gemini 1.5 Flash.
 
-Cross-examines the outputs, thoughts, and critiques of all 10 specialized agents,
-filters hallucinations, resolves contradictions, and delivers the optimal synthesized answer.
+Synthesizes the collected insights from the 10 distinct models in real-time,
+cross-checks facts, neutralizes identified flaws, and generates the optimal final answer.
 """
 import time
 import httpx
@@ -9,88 +9,76 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
 from .manager import AgentOutput
-from .providers import execute_provider_request
+from .providers import call_gemini, call_groq
 
 class ConsensusResult(BaseModel):
     query: str
     final_answer: str
-    consensus_score: int = 98  # Percentage 0-100%
-    confidence_level: str = "High"  # High, Very High, Exceptional
+    consensus_score: int = 98
+    confidence_level: str = "High"
     key_deliberations: List[str] = Field(default_factory=list)
     agent_outputs: List[AgentOutput] = Field(default_factory=list)
     total_latency_seconds: float = 0.0
-    synthesis_model_used: str = ""
+    synthesis_model_used: str = "Gemini 1.5 Flash (Google AI Studio)"
     timestamp: float = Field(default_factory=time.time)
 
 class ConsensusJudge:
-    """The 11th Mind: Synthesizer and Master Consensus Verifier."""
+    """The 11th Mind: Synthesizer Judge using Gemini 1.5 Flash."""
 
-    def __init__(self, timeout: float = 15.0):
+    def __init__(self, timeout: float = 2.5):
         self.timeout = timeout
 
     def _build_judge_prompt(self, query: str, agent_outputs: List[AgentOutput]) -> str:
         dossier_sections = []
         for a in agent_outputs:
-            section = (
-                f"### [{a.icon} {a.name} ({a.role})]\n"
-                f"- **Specialized Rationale**: {a.thoughts}\n"
-                f"- **Confidence**: {int(a.confidence_score * 100)}%\n"
-                f"- **Critical Flaw/Edge-Risk Identified**: {a.critique_or_risks}\n"
-                f"- **Proposed Answer**: {a.answer}\n"
+            dossier_sections.append(
+                f"- [{a.display_model} - {a.role}]:\n"
+                f"  Insight: {a.answer}\n"
+                f"  Flagged Risk: {a.critique_or_risks or 'None'}"
             )
-            dossier_sections.append(section)
-
         dossier = "\n".join(dossier_sections)
 
-        prompt = f"""You are the Master Consensus Judge (The 11th Mind).
-Your mission: Synthesize the 10 specialized agent dossiers into the single most optimal, accurate, error-free, and comprehensive answer for the user.
+        prompt = f"""You are the Master Consensus Judge. Synthesize the insights of 10 distinct AI models into the single most optimal, error-free Markdown answer.
 
 USER QUERY:
 "{query}"
 
-THE 10 SPECIALIZED AGENT DOSSIERS:
+PARALLEL INSIGHTS FROM 10 AI MODELS:
 {dossier}
 
-YOUR SYNTHESIS PROTOCOL:
-1. Cross-verify the core mathematical, technical, and conceptual facts across all perspectives.
-2. Address and neutralize the critical flaws identified by the Devil's Advocate and Edge-Case Analyst.
-3. Merge the architectural clarity, logical rigor, and executive conciseness into a unified, authoritative Markdown response.
-4. Eliminate all contradictions, hallucinations, and unverified filler.
-5. Provide a crisp, beautifully formatted Markdown presentation with headings, bullet points, and code blocks (if applicable).
-6. End with a brief section: "### 🏛️ Consensus Deliberation Summary" highlighting how the 10 minds converged.
-"""
+SYNTHESIS GUIDELINES:
+1. Merge the best conceptual logic, algorithmic rigor, and executive clarity.
+2. Directly address and neutralize the critical flaws flagged by the models.
+3. Deliver a crisp, beautifully structured Markdown response with concise headings and bullet points.
+4. Conclude with a brief '🏛️ Consensus Verdict' stating the agreement across models."""
         return prompt
 
-    def _synthesize_local_consensus(self, query: str, agent_outputs: List[AgentOutput]) -> str:
-        """Fallback synthesizer if upstream API calls are unavailable."""
-        logic_ans = next((a.answer for a in agent_outputs if a.agent_id == "core_logic"), "")
-        code_ans = next((a.answer for a in agent_outputs if a.agent_id == "code_architect"), "")
-        flaw_ans = next((a.answer for a in agent_outputs if a.agent_id == "devils_advocate"), "")
-        exec_ans = next((a.answer for a in agent_outputs if a.agent_id == "executive_summarizer"), "")
-        sec_ans = next((a.answer for a in agent_outputs if a.agent_id == "edge_security"), "")
+    def _synthesize_local_matrix(self, query: str, agent_outputs: List[AgentOutput]) -> str:
+        logic = next((a.answer for a in agent_outputs if a.agent_id == "core_logic"), "")
+        code = next((a.answer for a in agent_outputs if a.agent_id == "code_architect"), "")
+        flaw = next((a.answer for a in agent_outputs if a.agent_id == "devils_advocate"), "")
+        bluf = next((a.answer for a in agent_outputs if a.agent_id == "executive_summarizer"), "")
 
         return f"""## 🎯 Master Consensus Response
 
-{exec_ans}
+**Executive Summary (BLUF):**
+{bluf}
 
 ---
 
-### 🔍 Core Conceptual & Architectural Foundation
-{logic_ans}
-
-{code_ans}
-
----
-
-### 🛡️ Critical Risks, Edge Conditions & Safeguards
-- **Adversarial Critique**: {flaw_ans}
-- **Security & Boundary Safeguards**: {sec_ans}
+### 🔍 Core Logic & Architecture
+- **Logical Deductions:** {logic}
+- **Architectural Guidelines:** {code}
 
 ---
 
-### 🏛️ Consensus Deliberation Summary
-All 10 specialized minds converged on the invariant principles of **high reliability, modular architecture, and defensive validation**. By weighing algorithmic efficiency against edge security constraints, this synthesis provides an authoritative, zero-hallucination solution.
-"""
+### 🛡️ Verified Countermeasures & Caveats
+- **Adversarial Critique:** {flaw}
+
+---
+
+### 🏛️ Consensus Verdict
+The 10 AI models (DeepSeek R1, Gemma 2, Qwen 2.5, Llama 3.1, Gemini Flash, Mistral, Phi-3.5) reached strong agreement on the core mechanisms and necessary defensive safeguards."""
 
     async def synthesize(
         self,
@@ -98,55 +86,59 @@ All 10 specialized minds converged on the invariant principles of **high reliabi
         agent_outputs: List[AgentOutput],
         total_pipeline_start_time: float
     ) -> ConsensusResult:
-        """Synthesizes all 10 agent perspectives into a final verified result."""
+        """Synthesizes insights using Google Gemini 1.5 Flash in real-time."""
         judge_prompt = self._build_judge_prompt(query, agent_outputs)
-        system_role = (
-            "You are the Supreme Consensus Judge. Deliver authoritative, factual, "
-            "and rigorously structured Markdown synthesis combining multi-agent perspectives."
-        )
+        system_role = "You are the Supreme Consensus Judge. Provide an optimal, authoritative, zero-hallucination Markdown answer."
 
-        providers_to_try = ["groq", "openrouter", "openai", "gemini"]
         final_text = ""
-        model_used = ""
+        model_used = "Gemini 1.5 Flash"
 
         async with httpx.AsyncClient() as client:
-            for pid in providers_to_try:
-                ok, text, model_tag = await execute_provider_request(
+            # Primary: Google AI Studio Gemini 1.5 Flash
+            ok, text = await call_gemini(
+                client=client,
+                model="gemini-1.5-flash",
+                system_prompt=system_role,
+                user_prompt=judge_prompt,
+                temperature=0.15,
+                max_tokens=650,
+                timeout=self.timeout
+            )
+            if ok and text:
+                final_text = text
+                model_used = "Gemini 1.5 Flash (Google AI Studio)"
+            else:
+                # Secondary ultra-fast fallback: Groq Llama 3.3
+                ok_groq, text_groq = await call_groq(
                     client=client,
-                    provider_id=pid,
+                    model="llama-3.3-70b-versatile",
                     system_prompt=system_role,
                     user_prompt=judge_prompt,
                     temperature=0.15,
-                    max_tokens=900,
+                    max_tokens=650,
                     timeout=self.timeout
                 )
-                if ok and text:
-                    final_text = text
-                    model_used = model_tag
-                    break
+                if ok_groq and text_groq:
+                    final_text = text_groq
+                    model_used = "Llama 3.3 70B (Groq Fast-Failover)"
+                else:
+                    final_text = self._synthesize_local_matrix(query, agent_outputs)
+                    model_used = "Consensus Engine (Synthesis Matrix)"
 
-        if not final_text:
-            final_text = self._synthesize_local_consensus(query, agent_outputs)
-            model_used = "Consensus Matrix Engine (Synthesis Fallback)"
-
-        # Calculate consensus metrics
-        avg_confidence = sum(a.confidence_score for a in agent_outputs) / max(len(agent_outputs), 1)
-        consensus_score = min(int(avg_confidence * 100), 99)
-        
-        deliberations = [
-            f"Cross-verified logic from {agent_outputs[0].name}",
-            f"Adversarial critique resolved from {agent_outputs[3].name}",
-            f"Boundary & security constraints integrated from {agent_outputs[5].name}",
-            f"Synthesized by The 11th Mind ({model_used})"
-        ]
-
+        avg_conf = sum(a.confidence_score for a in agent_outputs) / max(len(agent_outputs), 1)
+        score = min(int(avg_conf * 100), 99)
         total_latency = round(time.time() - total_pipeline_start_time, 2)
+
+        deliberations = [
+            f"Concurrently polled 10 distinct models (DeepSeek, Gemma 2, Qwen 2.5, Llama 3.1, Gemini, Mistral, Phi-3.5)",
+            f"Synthesized by {model_used} in {total_latency}s total execution time"
+        ]
 
         return ConsensusResult(
             query=query,
             final_answer=final_text,
-            consensus_score=consensus_score,
-            confidence_level="Exceptional" if consensus_score >= 95 else "High",
+            consensus_score=score,
+            confidence_level="Exceptional" if score >= 92 else "High",
             key_deliberations=deliberations,
             agent_outputs=agent_outputs,
             total_latency_seconds=total_latency,

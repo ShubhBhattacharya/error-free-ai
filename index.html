@@ -269,8 +269,8 @@
                 card.innerHTML = `
                     <span class="text-base">${a.icon}</span>
                     <div class="truncate">
-                        <div class="font-medium text-slate-800 truncate">${a.name.split(" ")[0]}</div>
-                        <div class="text-[10px] text-slate-400 truncate">${a.role}</div>
+                        <div class="font-semibold text-slate-800 truncate">${a.display_model || a.name.split(" ")[0]}</div>
+                        <div class="text-[10px] text-slate-400 truncate">${a.role} • ${a.provider.toUpperCase()}</div>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -287,7 +287,7 @@
                 chip.innerHTML = `
                     <div class="flex items-center gap-1.5 truncate">
                         <span>${a.icon}</span>
-                        <span class="font-medium truncate text-[11px]">${a.role}</span>
+                        <span class="font-medium truncate text-[11px]">${a.display_model || a.role}</span>
                     </div>
                     <span id="conf-${a.id}" class="text-[10px] font-mono font-medium">pending</span>
                 `;
@@ -473,8 +473,8 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xl">${a.icon}</span>
                             <div>
-                                <h4 class="font-bold text-xs text-slate-800">${a.name}</h4>
-                                <span class="text-[10px] text-slate-400">${a.role}</span>
+                                <h4 class="font-bold text-xs text-slate-800">${a.display_model || a.name}</h4>
+                                <span class="text-[10px] text-slate-400 font-medium">${a.role} • ${(a.provider || '').toUpperCase()}</span>
                             </div>
                         </div>
                         <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold border border-blue-200/60">

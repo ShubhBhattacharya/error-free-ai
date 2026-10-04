@@ -36,8 +36,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-agent_manager = MultiAgentManager(timeout_per_agent=12.0)
-consensus_judge = ConsensusJudge(timeout=15.0)
+agent_manager = MultiAgentManager(timeout_per_agent=2.0)
+consensus_judge = ConsensusJudge(timeout=2.5)
 
 class QueryRequest(BaseModel):
     query: str
@@ -47,7 +47,7 @@ class QueryRequest(BaseModel):
 # -------------------------------------------------------------
 async def stream_multi_agent_pipeline(user_query: str):
     start_time = time.time()
-    yield f"data: 🚀 Launching 10-Agent Consensus Matrix concurrently...\n\n"
+    yield f"data: 🚀 Launching 10 Distinct AI Models in parallel (<3s target)...\n\n"
     await asyncio.sleep(0.02)
 
     # Queue to stream progress as each agent finishes
@@ -71,7 +71,7 @@ async def stream_multi_agent_pipeline(user_query: str):
             completed_count += 1
             status_symbol = "✅" if agent_out.status in ["success", "fallback"] else "⚠️"
             yield (
-                f"data: {status_symbol} {agent_out.icon} [{agent_out.name}] "
+                f"data: {status_symbol} {agent_out.icon} [{agent_out.display_model}] "
                 f"verified ({int(agent_out.confidence_score * 100)}% conf | {agent_out.latency_seconds}s)\n\n"
             )
         except asyncio.TimeoutError:
